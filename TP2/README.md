@@ -12,10 +12,11 @@ To execute the code, first set up a virtual environment (optional but recommande
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+python -m spacy download en_core_web_md
 ```
 
-To produce the different results, either manually run the notebook in ``TP2/TP2.ipynb`` or the associated python file with:
+To produce the different results, run:
 
 ```bash
-python -m TP2.TP2
+python -m TP2.main
 ```
