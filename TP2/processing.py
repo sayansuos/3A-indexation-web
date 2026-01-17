@@ -24,7 +24,7 @@ def load_jsonl_as_df(path_in: str) -> pd.DataFrame:
 
 def extract_product_id(url: str) -> str:
     """
-    Extracts the product's ID from a page with a the given 'url'.
+    Extracts the product's ID from a page with the given 'url'.
 
     :param url: Url of the product.
     :type url: str
@@ -145,11 +145,11 @@ def build_feature_index(df: pd.DataFrame, feature_name: str) -> dict:
     """
     Docstring pour build_feature_index
 
-    :param df: Description
+    :param df: Dataframe with urls and their corresponding features.
     :type df: pd.DataFrame
-    :param feature_name: Description
+    :param feature_name: Name of the feature we want to extract.
     :type feature_name: str
-    :return: Description
+    :return: Dict with all possible features of 'features_name' as keys and the list of urls containing it as values.
     :rtype: dict
     """
 
@@ -183,7 +183,14 @@ def build_feature_index(df: pd.DataFrame, feature_name: str) -> dict:
 
 
 def build_review_index(df: pd.DataFrame) -> dict:
+    """
+    Docstring pour build_review_index
 
+    :param df: Dataframe with urls and their corresponding reviews.
+    :type df: pd.DataFrame
+    :return: Dict with all urls as keys and a doct of their reviews count, mean ratings and last ratings as values.
+    :rtype: dict
+    """
     index = {}
 
     for _, row in df.iterrows():
