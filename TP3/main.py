@@ -22,11 +22,11 @@ def main(queries: list[str], input_path: str, weights: dict) -> dict:
     total_docs = len(df)
     responses = {}
     for q in queries:
-
+        # Calculating the scores
         results = calculate_linear_scoring(query=q, weights=weights, df=df)
-        top5 = list(results.items())[:5]
+        top5 = list(results.items())[:5]  # Only keep the top5
 
-        if not top5 or top5[0][1] == 0:
+        if not top5 or top5[0][1] == 0:  # If all scores are 0, we return nothing
             continue
 
         list_urls = []
@@ -42,6 +42,7 @@ def main(queries: list[str], input_path: str, weights: dict) -> dict:
             title = product["title"]
             description = product["description"]
 
+            # We enumerate each response
             responses[q][str(i + 1)] = {
                 "title": title,
                 "url": url,

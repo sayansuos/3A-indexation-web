@@ -72,7 +72,7 @@ def tokenize(text: str) -> list[str]:
     :rtype: list[str]
     """
     table = str.maketrans(string.punctuation, " " * len(string.punctuation))
-    text = text.translate(table)
+    text = text.translate(table)  # To replace all punctuation by spaces
     return text.strip(string.punctuation).split()
 
 
@@ -97,7 +97,7 @@ def remove_stopwords(tokens: list[str]) -> list[str]:
     :return: List of tokens without stopwords.
     :rtype: list[str]
     """
-    return [x for x in tokens if x not in STOPWORDS]
+    return [x for x in tokens if x not in STOPWORDS]  # Stopwords from nltk
 
 
 def process_doc(doc: str) -> list[str]:
@@ -123,6 +123,7 @@ def get_synonyms(token: str) -> list[str]:
     """
     origin_synonyms = load_json(PATH + "/" + SYNONYMS_PATH)
     synonyms = None
+    # We need to check within both the keys and the values
     for k, v in origin_synonyms.items():
         if k == token:
             synonyms = origin_synonyms[token]
@@ -148,6 +149,7 @@ def process_query(query: str) -> list[str]:
         synonyms = get_synonyms(token)
         if synonyms:
             augment += synonyms
+    # Same as processing any text, but we add synonyms
     return q + augment
 
 
@@ -182,9 +184,12 @@ def get_pos_in_doc(token: str, doc_url: str, field: str) -> list[int]:
     :return: List of integer positions where the token is found, or an empty list.
     :rtype: list[int]
     """
+    # Bc there are only position for title and description
     if field not in ["title", "description"]:
         raise ValueError("'field' should be 'title' or 'description'.")
     index = load_json(PATH + "/" + field + "_index.json")
+    # First check if the word is known
+    # Then check if there is a document for this word
     if token in index.keys() and doc_url in index[token]:
         return index[token][doc_url]
     else:
@@ -209,8 +214,10 @@ def get_occ_in_doc(token: str, doc_url: str, field: list[str] = DOC_FIELD) -> in
         index = load_json(PATH + "/" + f + "_index.json")
         if token in index.keys() and doc_url in index[token]:
             if isinstance(index[token], dict):
+                # If it's title or description, we keep the number of saved positions
                 occ += len(index[token][doc_url])
             else:
+                # If it's another index, we only add one occ
                 occ += 1
     return occ
 
@@ -228,6 +235,8 @@ def is_in_doc(token: str, doc_url: str) -> bool:
     """
     for field in DOC_FIELD:
         index = load_json(PATH + "/" + field + "_index.json")
+        # First check if the word is known
+        # Then check if there is the wanted document
         if token in index.keys() and doc_url in index[token]:
             return True
     return False
@@ -245,6 +254,8 @@ def contain_1_token(query: str, doc_url: str) -> bool:
     :rtype: bool
     """
     query = process_query(query)
+    # Creates a list with is_in_doc result for all token of the query
+    # True if there is at least one True
     return any([is_in_doc(x, doc_url) for x in query])
 
 
@@ -260,6 +271,8 @@ def contain_all_tokens(query: str, doc_url: str) -> bool:
     :rtype: bool
     """
     query = process_query(query)
+    # Creates a list with is_in_doc result for all token of the query
+    # True if all of them are True
     return all([is_in_doc(x, doc_url) for x in query])
 
 
@@ -281,9 +294,11 @@ def get_len_content(
     len_content = 0
     for f in field:
         if f in ["title", "description"]:
+            # If it's a title or a description, we need to apply the text processing pipeline
             content = df.loc[df["url"] == doc_url][f].to_list()[0]
             len_content += len(process_doc(content))
         else:
+            # Otherwise, for the features, we just add 1
             len_content += 1
     return len_content
 

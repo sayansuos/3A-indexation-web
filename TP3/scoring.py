@@ -26,7 +26,6 @@ def calculate_bm25(
     """
     query = process_query(query)
     n_docs = len(df)
-
     all_lengths = df["url"].apply(
         lambda x: get_len_content(doc_url=x, df=df, field=[field])
     )
@@ -37,10 +36,12 @@ def calculate_bm25(
     for token in query:
         doc_freq = sum(df["url"].apply(lambda x: is_in_doc(token, x)))
         if doc_freq != 0:
+            # Inversed doc frequency
             idf = np.log(n_docs / doc_freq)
             for i, url in enumerate(df["url"]):
                 f = get_occ_in_doc(token, url, [field])
                 if f > 0:
+                    # Here, we just apply the formula from the course
                     len_doc = all_lengths.iloc[i]
                     num = f * (k + 1)
                     den = f + k * (1 - b + b * len_doc / avg_len)
@@ -70,6 +71,8 @@ def is_exact_match(query: str, field: str, df: pd.DataFrame) -> dict:
         for token in query:
             positions = get_pos_in_doc(token, url, field)
             all_positions.append(positions)
+        # We have the list of positions from words of the query,
+        # such as first list = positions for the first token of the query
         if are_positions_successive(all_positions):
             match[url] = 1
 
@@ -99,7 +102,10 @@ def calculate_reviews_boost(
         mean_mark = marks["mean_mark"]
         count = marks["total_reviews"]
 
+        # Divide by 5 bc the rate is out of 5
         mark_factor = 1 + (mean_mark / 5) * weights["avg_mark"]
+        # Here we use the log to have a big difference between 1 and 10
+        # But smaller difference between 1001 and 1010
         count_factor = 1 + math.log10(count + 1) * weights["count_mark"]
 
         boost[url] = mark_factor * count_factor
@@ -121,11 +127,16 @@ def calculate_linear_scoring(query: str, df: pd.DataFrame, weights: dict) -> dic
     :rtype: dict
     """
 
+    # Scores associated to the field
     all_score_title = calculate_bm25(query=query, field="title", df=df)
     all_score_desc = calculate_bm25(query=query, field="description", df=df)
     all_score_brand = calculate_bm25(query=query, field="brand", df=df)
     all_score_origin = calculate_bm25(query=query, field="origin", df=df)
+    # Scores associated to the proximity of word in the query
+    # especially if it exactly corresponds to a title
     all_score_proximity = is_exact_match(query=query, field="title", df=df)
+    # Boost associated to the reviews
+    # If a pertinent document is well-rated, we boost it
     all_review_boost = calculate_reviews_boost(weights=weights, df=df)
 
     scores = {}
