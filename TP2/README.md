@@ -53,7 +53,7 @@ To execute the code, first set up a virtual environment (optional but recommande
 ```bash
 # Virtual environment
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate # On Windows: .venv\Scripts\activate
 
 # Prerequisites
 pip install -r requirements.txt
